@@ -12,11 +12,11 @@ class SchrodingerEquation(BasePDE):
     """
     Nonlinear Schrödinger Equation (NLS).
 
-    PDE: i·∂u/∂t + 0.5·∂²u/∂x² + |u|²·u = 0
+    PDE: i·∂u/∂t + ∂²u/∂x² + |u|²·u = 0
 
     Split into real and imaginary parts (u = u_re + i·u_im):
-    - Real: -∂u_im/∂t + 0.5·∂²u_re/∂x² + |u|²·u_re = 0
-    - Imag: ∂u_re/∂t + 0.5·∂²u_im/∂x² + |u|²·u_im = 0
+    - Real: -∂u_im/∂t + ∂²u_re/∂x² + |u|²·u_re = 0
+    - Imag: ∂u_re/∂t + ∂²u_im/∂x² + |u|²·u_im = 0
 
     Where |u|² = u_re² + u_im²
 
@@ -90,11 +90,11 @@ class SchrodingerEquation(BasePDE):
         )[0]
         u_im_xx = grad_im_x[:, 0:1]
 
-        # NLS: i·u_t + 0.5·u_xx + |u|^2·u = 0
-        # Real part: -u_im_t + 0.5·u_re_xx + |u|^2·u_re = 0
-        # Imag part: u_re_t + 0.5·u_im_xx + |u|^2·u_im = 0
-        res_re = -u_im_t + 0.5 * u_re_xx + u_sq * u_re
-        res_im = u_re_t + 0.5 * u_im_xx + u_sq * u_im
+        # NLS: i·u_t + u_xx + |u|^2·u = 0
+        # Real part: -u_im_t + u_re_xx + |u|^2·u_re = 0
+        # Imag part: u_re_t + u_im_xx + |u|^2·u_im = 0
+        res_re = -u_im_t + u_re_xx + u_sq * u_re
+        res_im = u_re_t + u_im_xx + u_sq * u_im
 
         return torch.cat([res_re, res_im], dim=1)
 
