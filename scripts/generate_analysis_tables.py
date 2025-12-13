@@ -12,6 +12,7 @@ import numpy as np
 from spike.models import SPIKE, PIKE, PINN
 from spike.evaluation.residuals import compute_residual
 from spike.evaluation.koopman import compute_koopman_r2, check_stability
+from spike.evaluation.lyapunov import compute_lyapunov_metrics
 from spike.diffeq.pdes import (
     HeatEquation, AdvectionEquation, BurgersEquation,
     AllenCahnEquation, KdVEquation, ReactionDiffusionEquation,
@@ -302,6 +303,53 @@ def generate_tables():
                 row.append('N/A')
         output.append("| " + " | ".join(row) + " |")
     print("  Stability done")
+
+    # ========== 8. Lyapunov Analysis (Chaotic Systems) ===========
+    output.append("\n## 8. Lyapunov Analysis (Chaotic Systems)\n")
+    output.append("Valid prediction time and tau ratio for Lorenz system (tau_lambda = 1.1s)\n")
+    output.append("| Metric | " + " | ".join(LABELS) + " |")
+    output.append("|--------|" + "|".join(["------" for _ in LABELS]) + "|")
+
+    # Lorenz Lyapunov metrics
+    lorenz = LorenzSystem()
+    lyap_results = {}
+    for variant in VARIANTS:
+        model = load_model('lorenz', variant)
+        if model:
+            metrics = compute_lyapunov_metrics(
+                model, lorenz,
+                t_train=(0, 25),
+                t_ood=(25, 35),
+                tau_lambda=1.1,
+                n_points=1000,
+                error_threshold=0.5
+            )
+            lyap_results[variant] = metrics
+        else:
+            lyap_results[variant] = {}
+
+    # Valid Time row
+    row = ['Valid Time (s)']
+    for variant in VARIANTS:
+        vt = lyap_results[variant].get('valid_time', float('nan'))
+        row.append(f'{vt:.2f}' if not np.isnan(vt) else 'N/A')
+    output.append("| " + " | ".join(row) + " |")
+
+    # Tau Ratio row
+    row = ['Tau Ratio']
+    for variant in VARIANTS:
+        tr = lyap_results[variant].get('tau_ratio', float('nan'))
+        row.append(f'{tr:.2f}' if not np.isnan(tr) else 'N/A')
+    output.append("| " + " | ".join(row) + " |")
+
+    # Short-term MSE row
+    row = ['Short-term MSE']
+    for variant in VARIANTS:
+        st = lyap_results[variant].get('short_term_mse', float('nan'))
+        row.append(fmt(st) if not np.isnan(st) else 'N/A')
+    output.append("| " + " | ".join(row) + " |")
+
+    print("  Lyapunov done")
 
     # Write output
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
