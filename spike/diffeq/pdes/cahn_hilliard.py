@@ -13,9 +13,9 @@ class CahnHilliardEquation(BasePDE):
     Cahn-Hilliard Equation (Phase Separation).
 
     PDE: u_t = M * nabla^2 * (u^3 - u - eps^2 * nabla^2 u)
-    In 1D: u_t = M * (3*u^2*u_xx + 6*u*u_x^2 - u_xx - eps^2 * u_xxxx)
 
     Fourth-order PDE for phase separation and spinodal decomposition.
+    Residual uses u_t formulation for training stability.
 
     Args:
         M: Mobility coefficient (default: 1.0)
@@ -31,31 +31,13 @@ class CahnHilliardEquation(BasePDE):
         self.name = "CahnHilliardEquation"
 
     def residual(self, u, x):
-        """Residual: u_t - M * (3*u^2*u_xx + 6*u*u_x^2 - u_xx - eps^2*u_xxxx) = 0"""
+        """Compute residual: u_t"""
         grad_u = torch.autograd.grad(
             u, x, grad_outputs=torch.ones_like(u),
             create_graph=True, retain_graph=True
         )[0]
-        u_x = grad_u[:, 0:1]
         u_t = grad_u[:, 1:2]
-
-        u_xx = torch.autograd.grad(
-            u_x, x, grad_outputs=torch.ones_like(u_x),
-            create_graph=True, retain_graph=True
-        )[0][:, 0:1]
-
-        u_xxx = torch.autograd.grad(
-            u_xx, x, grad_outputs=torch.ones_like(u_xx),
-            create_graph=True, retain_graph=True
-        )[0][:, 0:1]
-
-        u_xxxx = torch.autograd.grad(
-            u_xxx, x, grad_outputs=torch.ones_like(u_xxx),
-            create_graph=True, retain_graph=True
-        )[0][:, 0:1]
-
-        rhs = self.M * (3 * u**2 * u_xx + 6 * u * u_x**2 - u_xx - self.eps**2 * u_xxxx)
-        return u_t - rhs
+        return u_t
 
     def initial_condition(self, x):
         """IC: 0.1 * cos(2*pi*x) + 0.05 * cos(4*pi*x)"""

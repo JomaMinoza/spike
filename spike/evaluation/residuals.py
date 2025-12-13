@@ -10,19 +10,19 @@ from typing import Optional, Tuple
 
 def compute_residual(
     model,
-    pde,
+    diffeq,
     n_points: int = 2000,
     domain: Optional[dict] = None,
     seed: int = 42
 ) -> float:
     """
-    Compute PDE residual for model evaluation.
+    Compute PDE/ODE residual for model evaluation.
 
     Supports 1D PDEs (x, t), 2D PDEs (x, y, t), and ODEs (t only).
 
     Args:
         model: SPIKE/PIKE model
-        pde: PDE object with residual() method
+        diffeq: PDE/ODE object with residual() method
         n_points: Number of collocation points
         domain: Optional domain override
         seed: Random seed for reproducibility
@@ -32,17 +32,17 @@ def compute_residual(
     """
     np.random.seed(seed)
 
-    # Get domain from PDE
-    pde_domain = pde.get_domain()
+    # Get domain from diffeq
+    diffeq_domain = diffeq.get_domain()
 
     # Detect dimensionality
-    has_y = 'y_min' in pde_domain
-    has_x = 'x_min' in pde_domain
+    has_y = 'y_min' in diffeq_domain
+    has_x = 'x_min' in diffeq_domain
 
     if domain is None:
-        x_range = (pde_domain.get('x_min', 0), pde_domain.get('x_max', 1))
-        y_range = (pde_domain.get('y_min', 0), pde_domain.get('y_max', 1))
-        t_range = (pde_domain.get('t_min', 0), pde_domain.get('t_max', 1))
+        x_range = (diffeq_domain.get('x_min', 0), diffeq_domain.get('x_max', 1))
+        y_range = (diffeq_domain.get('y_min', 0), diffeq_domain.get('y_max', 1))
+        t_range = (diffeq_domain.get('t_min', 0), diffeq_domain.get('t_max', 1))
     else:
         x_range = domain.get('x', (0, 1))
         y_range = domain.get('y', (0, 1))
@@ -84,7 +84,7 @@ def compute_residual(
             u = out[0] if isinstance(out, tuple) else out
 
             # Compute residual
-            residual = pde.residual(u, inputs)
+            residual = diffeq.residual(u, inputs)
 
             return (residual ** 2).mean().item()
     except Exception as e:
@@ -93,7 +93,7 @@ def compute_residual(
 
 def compute_residual_stats(
     model,
-    pde,
+    diffeq,
     n_points: int = 2000,
     seed: int = 42
 ) -> dict:
@@ -105,9 +105,9 @@ def compute_residual_stats(
     """
     np.random.seed(seed)
 
-    pde_domain = pde.get_domain()
-    x_range = (pde_domain.get('x_min', 0), pde_domain.get('x_max', 1))
-    t_range = (pde_domain.get('t_min', 0), pde_domain.get('t_max', 1))
+    diffeq_domain = diffeq.get_domain()
+    x_range = (diffeq_domain.get('x_min', 0), diffeq_domain.get('x_max', 1))
+    t_range = (diffeq_domain.get('t_min', 0), diffeq_domain.get('t_max', 1))
 
     x = torch.tensor(
         np.random.uniform(*x_range, n_points),
@@ -126,7 +126,7 @@ def compute_residual_stats(
         with torch.enable_grad():
             out = model(inputs)
             u = out[0] if isinstance(out, tuple) else out
-            residual = pde.residual(u, inputs)
+            residual = diffeq.residual(u, inputs)
 
             with torch.no_grad():
                 return {

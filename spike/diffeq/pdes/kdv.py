@@ -11,21 +11,23 @@ class KdVEquation(BasePDE):
     """
     Korteweg-de Vries (KdV) Equation.
 
-    PDE: u_t + u * u_x + u_xxx = 0
+    PDE: u_t + 6*u*u_x + u_xxx = 0
 
     Fundamental nonlinear dispersive wave equation with soliton solutions.
 
     Args:
+        nonlinear_coeff: Coefficient on nonlinear term (default: 6)
         domain_x: Spatial domain (default: (-10, 10))
         domain_t: Temporal domain (default: (0, 1))
     """
 
-    def __init__(self, domain_x=(-10.0, 10.0), domain_t=(0.0, 1.0)):
+    def __init__(self, nonlinear_coeff=6.0, domain_x=(-10.0, 10.0), domain_t=(0.0, 1.0)):
         super().__init__(domain_x, domain_t)
+        self.nonlinear_coeff = nonlinear_coeff
         self.name = "KdVEquation"
 
     def residual(self, u, x):
-        """Compute residual: u_t + u * u_x + u_xxx = 0"""
+        """Compute residual: u_t + 6*u*u_x + u_xxx = 0"""
         grad_u = torch.autograd.grad(
             u, x, grad_outputs=torch.ones_like(u),
             create_graph=True, retain_graph=True
@@ -43,7 +45,7 @@ class KdVEquation(BasePDE):
             create_graph=True, retain_graph=True
         )[0][:, 0:1]
 
-        return u_t + u * u_x + u_xxx
+        return u_t + self.nonlinear_coeff * u * u_x + u_xxx
 
     def initial_condition(self, x):
         """Soliton IC: u(x, 0) = 0.5 * sech^2(x/2)"""
@@ -62,4 +64,4 @@ class KdVEquation(BasePDE):
         return 0.5 * sech ** 2
 
     def get_params(self):
-        return {}
+        return {'nonlinear_coeff': self.nonlinear_coeff}

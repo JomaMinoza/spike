@@ -11,10 +11,11 @@ from scipy.linalg import expm
 
 def compute_koopman_r2(
     model,
-    pde,
+    diffeq=None,
     n_points: int = 1000,
     dt: float = 0.1,
-    seed: int = 42
+    seed: int = 42,
+    input_dim: int = None
 ) -> float:
     """
     Compute Koopman prediction R².
@@ -24,10 +25,11 @@ def compute_koopman_r2(
 
     Args:
         model: SPIKE/PIKE model
-        pde: PDE object for domain info
+        diffeq: PDE/ODE object (optional, used to infer input_dim)
         n_points: Number of test points
         dt: Time step for prediction
         seed: Random seed
+        input_dim: Input dimension (1 for ODE, 2 for 1D PDE, 3 for 2D PDE)
 
     Returns:
         R² score (float)
@@ -38,32 +40,54 @@ def compute_koopman_r2(
     if not hasattr(model, 'koopman'):
         return float('nan')
 
-    pde_domain = pde.get_domain()
-    x_range = (pde_domain.get('x_min', 0) + 0.1,
-               pde_domain.get('x_max', 1) - 0.1)
-    t_range = (pde_domain.get('t_min', 0) + 0.1,
-               pde_domain.get('t_max', 1) - 0.1 - dt)
+    # Infer input_dim from model or diffeq
+    if input_dim is None:
+        if hasattr(model, 'input_dim'):
+            input_dim = model.input_dim
+        elif diffeq is not None:
+            diffeq_domain = diffeq.get_domain()
+            if 'y_min' in diffeq_domain:
+                input_dim = 3  # 2D PDE
+            elif 'x_min' in diffeq_domain:
+                input_dim = 2  # 1D PDE
+            else:
+                input_dim = 1  # ODE
+        else:
+            input_dim = 2  # Default to 1D PDE
 
-    x = np.random.uniform(*x_range, n_points)
-    t = np.random.uniform(*t_range, n_points)
-
-    inputs_t = torch.tensor(np.stack([x, t], axis=1), dtype=torch.float32)
-    inputs_t_dt = torch.tensor(np.stack([x, t + dt], axis=1), dtype=torch.float32)
+    # Use fixed domain [0.1, 0.9] for consistency with original verify script
+    if input_dim == 1:
+        t = np.random.uniform(0.1, 0.9, n_points)
+        inputs_t = torch.tensor(t.reshape(-1, 1), dtype=torch.float32)
+        inputs_t_dt = torch.tensor((t + dt).reshape(-1, 1), dtype=torch.float32)
+    elif input_dim == 2:
+        x = np.random.uniform(0.1, 0.9, n_points)
+        t = np.random.uniform(0.1, 0.9, n_points)
+        inputs_t = torch.tensor(np.stack([x, t], axis=1), dtype=torch.float32)
+        inputs_t_dt = torch.tensor(np.stack([x, t + dt], axis=1), dtype=torch.float32)
+    else:  # input_dim == 3
+        x = np.random.uniform(0.1, 0.9, n_points)
+        y = np.random.uniform(0.1, 0.9, n_points)
+        t = np.random.uniform(0.1, 0.9, n_points)
+        inputs_t = torch.tensor(np.stack([x, y, t], axis=1), dtype=torch.float32)
+        inputs_t_dt = torch.tensor(np.stack([x, y, t + dt], axis=1), dtype=torch.float32)
 
     try:
         with torch.no_grad():
-            # Get embeddings at t and t+dt
-            _, z_t = model(inputs_t)
-            _, z_t_dt = model(inputs_t_dt)
+            # Use model.pinn + model.koopman.embed directly (matching verify script)
+            u_t = model.pinn(inputs_t)
+            u_t_dt = model.pinn(inputs_t_dt)
+            g_t = model.koopman.embed(u_t)
+            g_t_dt = model.koopman.embed(u_t_dt)
 
-            # Koopman prediction: z(t+dt) = exp(dt*A) @ z(t)
-            A = model.koopman.get_matrix().numpy()
+            # Koopman prediction: g(t+dt) = exp(dt*A) @ g(t)
+            A = model.koopman.A.weight.detach().numpy()
             K = expm(dt * A)
-            z_pred = torch.tensor((K @ z_t.numpy().T).T, dtype=torch.float32)
+            g_pred = torch.tensor((K @ g_t.numpy().T).T, dtype=torch.float32)
 
             # R²
-            ss_res = ((z_t_dt - z_pred) ** 2).sum().item()
-            ss_tot = ((z_t_dt - z_t_dt.mean(0)) ** 2).sum().item()
+            ss_res = ((g_t_dt - g_pred) ** 2).sum().item()
+            ss_tot = ((g_t_dt - g_t_dt.mean(0)) ** 2).sum().item()
             r2 = 1 - ss_res / (ss_tot + 1e-10)
 
             return r2
@@ -87,7 +111,7 @@ def check_stability(model) -> Tuple[Optional[bool], float]:
         return None, float('nan')
 
     try:
-        A = model.koopman.get_matrix().numpy()
+        A = model.koopman.A.weight.detach().numpy()
         eigenvalues = np.linalg.eigvals(A)
         max_real = np.max(np.real(eigenvalues))
 

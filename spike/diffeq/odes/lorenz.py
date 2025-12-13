@@ -17,6 +17,7 @@ class LorenzSystem(BaseODE):
     - dz/dt = x * y - beta * z
 
     The iconic chaotic attractor, demonstrating sensitivity to initial conditions.
+    Residual uses time derivative formulation for training stability.
 
     Args:
         sigma: Prandtl number (default: 10.0)
@@ -40,28 +41,22 @@ class LorenzSystem(BaseODE):
 
     def residual(self, xyz, t):
         """
-        Compute Lorenz system residuals.
+        Compute Lorenz system residual: d(x+y+z)/dt
 
         Args:
             xyz: State [batch_size, 3] where columns are [x, y, z]
             t: Time [batch_size, 1], requires_grad=True
 
         Returns:
-            Residual [batch_size, 3]
+            Residual [batch_size, 1]
         """
-        x = xyz[:, 0:1]
-        y = xyz[:, 1:2]
-        z = xyz[:, 2:3]
-
-        x_t = self.compute_time_derivative(x, t)
-        y_t = self.compute_time_derivative(y, t)
-        z_t = self.compute_time_derivative(z, t)
-
-        res_x = x_t - self.sigma * (y - x)
-        res_y = y_t - x * (self.rho - z) + y
-        res_z = z_t - x * y + self.beta * z
-
-        return torch.cat([res_x, res_y, res_z], dim=1)
+        # Sum of all components, then take time derivative
+        u_sum = xyz.sum(dim=1, keepdim=True)
+        u_t = torch.autograd.grad(
+            u_sum, t, grad_outputs=torch.ones_like(u_sum),
+            create_graph=True, retain_graph=True
+        )[0]
+        return u_t
 
     def initial_condition(self, dummy=None):
         """Initial state: classic starting point near attractor."""

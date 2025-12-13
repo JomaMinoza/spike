@@ -25,7 +25,7 @@ class BurgersEquation(BasePDE):
 
     def __init__(
         self,
-        nu: float = 0.01/np.pi,
+        nu: float = 0.01,
         domain_x=(-1.0, 1.0),
         domain_t=(0.0, 1.0)
     ):

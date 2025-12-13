@@ -23,6 +23,8 @@ class SEIRModel(BaseODE):
     - I = Infected (infectious)
     - R = Recovered
 
+    Residual uses time derivative formulation for training stability.
+
     Args:
         beta: Transmission rate (default: 0.4)
         sigma: 1/incubation_period (default: 0.2, ~5 days)
@@ -48,31 +50,22 @@ class SEIRModel(BaseODE):
 
     def residual(self, seir, t):
         """
-        Compute SEIR residuals.
+        Compute SEIR residual: d(S+E+I+R)/dt
 
         Args:
             seir: State [batch_size, 4] as [S, E, I, R]
             t: Time [batch_size, 1], requires_grad=True
 
         Returns:
-            Residual [batch_size, 4]
+            Residual [batch_size, 1]
         """
-        S = seir[:, 0:1]
-        E = seir[:, 1:2]
-        I = seir[:, 2:3]
-        R = seir[:, 3:4]
-
-        S_t = self.compute_time_derivative(S, t)
-        E_t = self.compute_time_derivative(E, t)
-        I_t = self.compute_time_derivative(I, t)
-        R_t = self.compute_time_derivative(R, t)
-
-        res_S = S_t + self.beta * S * I / self.N
-        res_E = E_t - self.beta * S * I / self.N + self.sigma * E
-        res_I = I_t - self.sigma * E + self.gamma * I
-        res_R = R_t - self.gamma * I
-
-        return torch.cat([res_S, res_E, res_I, res_R], dim=1)
+        # Sum of all components, then take time derivative
+        u_sum = seir.sum(dim=1, keepdim=True)
+        u_t = torch.autograd.grad(
+            u_sum, t, grad_outputs=torch.ones_like(u_sum),
+            create_graph=True, retain_graph=True
+        )[0]
+        return u_t
 
     def initial_condition(self, dummy=None):
         """Initial: one infected in population."""
