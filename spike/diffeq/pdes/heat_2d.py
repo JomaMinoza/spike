@@ -25,7 +25,7 @@ class Heat2D(BasePDE):
 
     def __init__(
         self,
-        alpha: float = 0.1,
+        alpha: float = 0.01,
         domain_x=(0.0, 1.0),
         domain_y=(0.0, 1.0),
         domain_t=(0.0, 1.0)
