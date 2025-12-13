@@ -1,0 +1,78 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spike-pinn"
+version = "0.1.0"
+description = "Sparse Physics-Informed Koopman-Enhanced Neural Networks"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+authors = [
+    {name = "SPIKE Authors"}
+]
+keywords = [
+    "physics-informed neural networks",
+    "koopman operator",
+    "sparse learning",
+    "PDE",
+    "deep learning",
+    "scientific machine learning"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "torch>=1.10.0",
+    "numpy>=1.20.0",
+    "scipy>=1.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=3.0.0",
+    "black>=22.0.0",
+    "isort>=5.10.0",
+    "flake8>=4.0.0",
+]
+vis = [
+    "matplotlib>=3.5.0",
+    "seaborn>=0.11.0",
+]
+all = [
+    "spike-pinn[dev,vis]",
+]
+
+[project.urls]
+Homepage = "https://github.com/spike-pinn/spike"
+Documentation = "https://github.com/spike-pinn/spike"
+Repository = "https://github.com/spike-pinn/spike"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["spike*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --cov=spike --cov-report=term-missing"
