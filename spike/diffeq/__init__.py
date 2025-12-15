@@ -11,7 +11,7 @@ Base classes:
 - KuramotoSivashinskyEquation, ReactionDiffusionEquation
 
 2D PDEs (spike.diffeq.pdes):
-- NavierStokes2D, LidDrivenCavity2D, ChannelFlow2D
+- NavierStokes2D, NavierStokes2DLidDriven, NavierStokes2DChannel
 
 ODEs (spike.diffeq.odes):
 - LorenzSystem, SEIRModel
