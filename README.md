@@ -99,7 +99,7 @@ spike/
 @article{spike2025,
   title={SPIKE: Sparse Koopman Regularization for Physics-Informed Neural Networks},
   author={Minoza, Jose Marie Antonio},
-  year={2025}
+  year={2026}
 }
 ```
 
