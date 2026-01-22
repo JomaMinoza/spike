@@ -96,15 +96,14 @@ spike/
 ## Citation
 
 ```bibtex
-@article{spike2026,
-  title={{SPIKE: Sparse Koopman Regularization for Physics-Informed Neural Networks}},
-  booktitle={Proceedings of the 3rd Conference on Parsimony and Learning},
-  series={Proceedings of Machine Learning Research},
-  publisher={PMLR},
-  author={Minoza, Jose Marie Antonio},
-  year={2026}
-}
-```
+@inproceedings{
+    minoza2026spike,
+    title={{SPIKE}: Sparse Koopman Regularization for Physics-Informed Neural Networks},
+    author={Jose Marie Antonio Mi{\~n}oza},
+    booktitle={The Third Conference on Parsimony and Learning (Proceedings Track)},
+    year={2026},
+    url={https://openreview.net/forum?id=qPm2f2OE7j}
+}```
 
 ## License
 
