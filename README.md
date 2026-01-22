@@ -103,8 +103,5 @@ spike/
     booktitle={The Third Conference on Parsimony and Learning (Proceedings Track)},
     year={2026},
     url={https://openreview.net/forum?id=qPm2f2OE7j}
-}```
-
-## License
-
-MIT
+}
+```
