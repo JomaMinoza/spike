@@ -1,242 +1,361 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SPIKE: Sparse Koopman Regularization for Physics-Informed Neural Networks</title>
-<meta name="description" content="SPIKE regularizes Physics-Informed Neural Networks with continuous-time Koopman operators to learn parsimonious dynamics and improve out-of-distribution generalization.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Spline+Sans+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#f4f1ea;
-    --panel:#fbfaf6;
-    --ink:#1a1a1a;
-    --muted:#6b6459;
-    --line:#ddd6c8;
-    --accent:#b3331d;     /* the SPIKE matrix red */
-    --accent-soft:#f3ddd6;
-    --link:#9a2b18;
-    --maxw:980px;
-  }
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{
-    margin:0;background:var(--bg);color:var(--ink);
-    font-family:'Newsreader',Georgia,serif;font-size:19px;line-height:1.65;
-    -webkit-font-smoothing:antialiased;
-  }
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
-  a{color:var(--link);text-decoration:none;border-bottom:1px solid rgba(154,43,24,.28)}
-  a:hover{border-bottom-color:var(--link)}
-  h1,h2,h3{font-weight:600;line-height:1.2;letter-spacing:-.01em}
-  code,kbd,.mono{font-family:'Spline Sans Mono',ui-monospace,monospace}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SPIKE: Sparse Koopman Regularization for Physics-Informed Neural Networks</title>
+  <meta name="description" content="SPIKE regularizes Physics-Informed Neural Networks with continuous-time Koopman operators to learn parsimonious dynamics and improve out-of-distribution generalization." />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  /* ---- Hero ---- */
-  header{padding:72px 0 40px;text-align:center;border-bottom:1px solid var(--line)}
-  .eyebrow{
-    font-family:'Inter',sans-serif;font-size:13px;font-weight:600;letter-spacing:.14em;
-    text-transform:uppercase;color:var(--accent);margin-bottom:22px;
-  }
-  h1.title{font-size:clamp(34px,5.2vw,56px);margin:0 0 8px;}
-  h1.title .spike{color:var(--accent)}
-  .subtitle{font-size:clamp(18px,2.4vw,23px);color:var(--muted);font-style:italic;margin:0 auto 30px;max-width:760px}
-  .authors{font-family:'Inter',sans-serif;font-size:18px;font-weight:500;margin-bottom:4px}
-  .affil{font-family:'Inter',sans-serif;font-size:15px;color:var(--muted);margin-bottom:6px}
-  .venue{font-family:'Inter',sans-serif;font-size:15px;color:var(--ink);margin-bottom:30px}
-  .venue b{color:var(--accent)}
+  <style>
+    :root {
+      --blue: #2563eb;
+      --blue-light: #eff6ff;
+      --gray: #6b7280;
+      --border: #e5e7eb;
+      --text: #111827;
+    }
 
-  .links{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
-  .btn{
-    font-family:'Inter',sans-serif;font-size:15px;font-weight:600;
-    display:inline-flex;align-items:center;gap:8px;
-    padding:11px 20px;border-radius:999px;border:1px solid var(--ink);
-    color:var(--ink);background:transparent;transition:all .15s ease;
-  }
-  .btn:hover{background:var(--ink);color:var(--bg);border-bottom-color:var(--ink)}
-  .btn .ic{font-family:'Spline Sans Mono',monospace;font-weight:500;font-size:14px;opacity:.7}
-  .btn:hover .ic{opacity:1}
+    * { box-sizing: border-box; }
+    body { font-family: "Inter", sans-serif; color: var(--text); background: #fff; }
 
-  /* ---- Sections ---- */
-  section{padding:52px 0;border-bottom:1px solid var(--line)}
-  section:last-of-type{border-bottom:none}
-  h2.sec{
-    font-family:'Inter',sans-serif;font-size:13px;font-weight:700;letter-spacing:.16em;
-    text-transform:uppercase;color:var(--accent);margin:0 0 22px;
-    display:flex;align-items:center;gap:14px;
-  }
-  h2.sec::after{content:"";flex:1;height:1px;background:var(--line)}
-  p{margin:0 0 18px}
-  .lead{font-size:21px}
+    /* ---- Layout ---- */
+    .page-section { padding: 3.5rem 1.5rem; }
+    .page-section.alt { background: #f9fafb; }
+    .inner { max-width: 860px; margin: 0 auto; }
+    .inner.wide { max-width: 1040px; }
 
-  figure{margin:0}
-  .fig{
-    background:var(--panel);border:1px solid var(--line);border-radius:14px;
-    padding:18px;margin:8px 0 12px;
-  }
-  .fig img{width:100%;height:auto;display:block;border-radius:6px}
-  figcaption{font-family:'Inter',sans-serif;font-size:14.5px;color:var(--muted);margin-top:14px;line-height:1.55}
-  figcaption b{color:var(--ink)}
+    /* ---- Navbar ---- */
+    nav.topnav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: #fff; border-bottom: 1px solid var(--border);
+      height: 48px; display: flex; align-items: center; padding: 0 1.5rem;
+    }
+    nav.topnav .brand { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+    nav.topnav .navlinks { margin-left: auto; display: flex; gap: 0.2rem; }
+    nav.topnav .navlinks a {
+      font-size: 0.85rem; color: var(--gray); text-decoration: none; padding: 0 0.6rem;
+    }
+    nav.topnav .navlinks a:hover { color: var(--blue); }
 
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
-  @media(max-width:760px){.grid2{grid-template-columns:1fr}}
-  /* equal-size media panels: letterbox both to the same box, no distortion */
-  .duo .fig{display:flex;flex-direction:column}
-  .duo .fig img{height:320px;object-fit:contain;background:#fff}
-  @media(max-width:760px){.duo .fig img{height:auto}}
+    /* ---- Header block ---- */
+    #header { padding: 5rem 1.5rem 2rem; text-align: center; border-bottom: 1px solid var(--border); }
+    #header h1 {
+      font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+      font-weight: 700; line-height: 1.35;
+      max-width: 820px; margin: 0 auto 1rem;
+    }
+    .venue-tag {
+      display: inline-block;
+      border: 1.5px solid var(--blue); color: var(--blue);
+      border-radius: 4px; padding: 0.15em 0.6em;
+      font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+    .author { font-size: 1.05rem; color: var(--text); margin-bottom: 0.3rem; }
+    .affil { font-size: 0.9rem; color: var(--gray); margin-bottom: 1.5rem; }
 
-  /* ---- Key ideas cards ---- */
-  .cards{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-  @media(max-width:760px){.cards{grid-template-columns:1fr}}
-  .card{
-    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px;
-  }
-  .card h3{font-size:20px;margin:0 0 8px}
-  .card .k{font-family:'Spline Sans Mono',monospace;color:var(--accent);font-size:13px;letter-spacing:.04em;display:block;margin-bottom:10px}
-  .card p{font-size:16.5px;color:var(--muted);margin:0}
-  .card p b{color:var(--ink)}
+    /* ---- Link buttons ---- */
+    .link-row { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
+    .link-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.45rem 1rem;
+      border: 1.5px solid var(--border); border-radius: 6px;
+      font-size: 0.88rem; font-weight: 500; color: var(--text); text-decoration: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .link-btn:hover { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+    .link-btn svg { width: 16px; height: 16px; }
 
-  /* ---- Stat row ---- */
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:6px 0 4px}
-  @media(max-width:760px){.stats{grid-template-columns:1fr}}
-  .stat{background:var(--accent-soft);border:1px solid #e7c4ba;border-radius:14px;padding:22px;text-align:center}
-  .stat .num{font-size:40px;font-weight:600;color:var(--accent);line-height:1}
-  .stat .lab{font-family:'Inter',sans-serif;font-size:14px;color:#7a3326;margin-top:8px;line-height:1.4}
+    /* ---- Section title ---- */
+    .sec-title {
+      font-size: 1.25rem; font-weight: 700;
+      margin-bottom: 1.2rem; padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--blue);
+    }
 
-  /* ---- Tables ---- */
-  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
-  table{border-collapse:collapse;width:100%;font-family:'Inter',sans-serif;font-size:14.5px}
-  th,td{padding:11px 14px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
-  th:first-child,td:first-child{text-align:left}
-  thead th{font-weight:600;color:var(--muted);background:#f1ede3;position:sticky;top:0}
-  tbody tr:last-child td{border-bottom:none}
-  td.best{color:var(--accent);font-weight:600}
-  .mono-cell{font-family:'Spline Sans Mono',monospace}
-  caption{caption-side:bottom;font-family:'Inter',sans-serif;font-size:13.5px;color:var(--muted);padding:12px 4px 0;text-align:left}
+    /* ---- Abstract ---- */
+    .abstract-text { font-size: 0.97rem; line-height: 1.85; color: #374151; text-align: justify; }
+    .abstract-text strong { color: var(--text); }
 
-  /* ---- Citation ---- */
-  pre.cite{
-    background:#22201c;color:#ece6d8;border-radius:14px;padding:22px 24px;overflow-x:auto;
-    font-family:'Spline Sans Mono',monospace;font-size:13.5px;line-height:1.6;margin:0;
-  }
-  .copy{
-    font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;
-    border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:7px 16px;color:var(--ink);
-    margin-bottom:14px;
-  }
-  .copy:hover{background:var(--ink);color:var(--bg)}
+    /* ---- Stat cards ---- */
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.6rem; }
+    @media (max-width: 700px) { .stat-grid { grid-template-columns: 1fr; } }
+    .stat-card {
+      border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem 1rem;
+      text-align: center; background: var(--blue-light);
+    }
+    .stat-card .num { font-size: 2rem; font-weight: 700; color: var(--blue); line-height: 1; }
+    .stat-card .lab { font-size: 0.82rem; color: #1e40af; margin-top: 0.55rem; line-height: 1.45; }
 
-  footer{padding:40px 0 64px;text-align:center;font-family:'Inter',sans-serif;font-size:14px;color:var(--muted)}
-  footer a{color:var(--muted)}
-  ul.clean{padding-left:1.1em;margin:0 0 18px}
-  ul.clean li{margin-bottom:8px}
-</style>
+    /* ---- Key idea cards ---- */
+    .idea-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 700px) { .idea-grid { grid-template-columns: 1fr; } }
+    .idea-card { border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem 1.3rem; background: #fff; }
+    .idea-card .kicker {
+      font-family: "Courier New", monospace; font-size: 0.74rem; letter-spacing: 0.04em;
+      color: var(--blue); text-transform: uppercase; display: block; margin-bottom: 0.5rem;
+    }
+    .idea-card h3 { font-size: 1.02rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .idea-card p { font-size: 0.9rem; line-height: 1.65; color: #374151; }
+    .idea-card p strong { color: var(--text); }
+
+    /* ---- Figures ---- */
+    .teaser img, .fig img { width: 100%; border-radius: 6px; border: 1px solid var(--border); }
+    .fig-caption { font-size: 0.85rem; color: var(--gray); margin-top: 0.75rem; line-height: 1.6; }
+    .fig-caption strong { color: var(--text); }
+
+    /* ---- Media duo (equal-size panels) ---- */
+    .media-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 700px) { .media-duo { grid-template-columns: 1fr; } }
+    .media-card { border: 1px solid var(--border); border-radius: 8px; padding: 1rem; background: #fff; }
+    .media-card img { width: 100%; height: 300px; object-fit: contain; background: #fff; border-radius: 4px; }
+    @media (max-width: 700px) { .media-card img { height: auto; } }
+    .media-card .cap { font-size: 0.82rem; color: var(--gray); margin-top: 0.6rem; line-height: 1.55; }
+    .media-card .cap strong { color: var(--text); }
+
+    /* ---- Mono / inline ---- */
+    .mono { font-family: "Courier New", monospace; font-size: 0.95em; }
+
+    /* ---- Results tables ---- */
+    .results-intro { font-size: 0.95rem; line-height: 1.75; color: #374151; margin-bottom: 1.2rem; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .data-table th {
+      background: #f3f4f6; font-weight: 600; padding: 0.6rem 0.8rem;
+      text-align: right; border: 1px solid var(--border);
+    }
+    .data-table th:first-child { text-align: left; }
+    .data-table td { padding: 0.55rem 0.8rem; border: 1px solid var(--border); color: #374151; text-align: right; }
+    .data-table td:first-child { text-align: left; }
+    .data-table tr:nth-child(even) td { background: #f9fafb; }
+    .data-table .best { font-weight: 700; color: var(--blue); }
+    .table-note { font-size: 0.8rem; color: var(--gray); margin-top: 0.6rem; }
+    .table-scroll { overflow-x: auto; }
+
+    /* ---- Variants list ---- */
+    .variant-list { list-style: none; padding: 0; margin: 0; }
+    .variant-list li {
+      font-size: 0.92rem; line-height: 1.6; color: #374151;
+      padding: 0.6rem 0 0.6rem 0; border-bottom: 1px solid var(--border);
+    }
+    .variant-list li:last-child { border-bottom: none; }
+    .variant-list strong { color: var(--text); }
+
+    /* ---- BibTeX ---- */
+    .bibtex-wrap { position: relative; }
+    .bibtex-block {
+      background: #1f2937; color: #d1d5db; font-family: "Courier New", monospace;
+      font-size: 0.84rem; line-height: 1.7; padding: 1.2rem 1.4rem;
+      border-radius: 8px; overflow-x: auto; white-space: pre;
+    }
+    .copy-btn {
+      position: absolute; top: 0.6rem; right: 0.7rem;
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+      color: #d1d5db; border-radius: 4px; padding: 0.2rem 0.65rem; font-size: 0.75rem; cursor: pointer;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.2); }
+
+    /* ---- Footer ---- */
+    footer { text-align: center; padding: 2rem; font-size: 0.82rem; color: var(--gray); border-top: 1px solid var(--border); }
+    footer a { color: var(--blue); text-decoration: none; }
+  </style>
 </head>
 <body>
 
-<header>
-  <div class="wrap">
-    <div class="eyebrow">CPAL 2026 &middot; Proceedings Track</div>
-    <h1 class="title"><span class="spike">SPIKE</span></h1>
-    <p class="subtitle">Sparse Koopman Regularization for Physics-Informed Neural Networks</p>
-    <div class="authors">Jose Marie Antonio Mi&ntilde;oza</div>
-    <div class="venue">The Third Conference on Parsimony and Learning (<b>CPAL</b>), 2026</div>
-    <div class="links">
-      <a class="btn" href="https://openreview.net/forum?id=qPm2f2OE7j"><span class="ic">[pdf]</span> Paper</a>
-      <a class="btn" href="https://openreview.net/forum?id=qPm2f2OE7j"><span class="ic">[or]</span> OpenReview</a>
-      <a class="btn" href="https://github.com/JomaMinoza/spike"><span class="ic">[&lt;/&gt;]</span> Code</a>
-      <a class="btn" href="#bibtex"><span class="ic">[@]</span> BibTeX</a>
+<!-- =========================================================
+     NAVBAR
+     ========================================================= -->
+<nav class="topnav">
+  <span class="brand">SPIKE</span>
+  <div class="navlinks">
+    <a href="https://openreview.net/pdf?id=qPm2f2OE7j" target="_blank">Paper</a>
+    <a href="https://openreview.net/forum?id=qPm2f2OE7j" target="_blank">OpenReview</a>
+    <a href="https://github.com/JomaMinoza/spike" target="_blank">Code</a>
+  </div>
+</nav>
+
+<!-- =========================================================
+     TITLE / AUTHOR / LINKS
+     ========================================================= -->
+<section id="header">
+  <span class="venue-tag">CPAL 2026</span>
+  <h1>SPIKE: Sparse Koopman Regularization for<br>Physics-Informed Neural Networks</h1>
+  <p class="author">Jose Marie Antonio Mi&ntilde;oza</p>
+  <p class="affil">Center for AI Research PH</p>
+  <div class="link-row">
+    <a class="link-btn" href="https://openreview.net/pdf?id=qPm2f2OE7j" target="_blank">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
+      Paper
+    </a>
+    <a class="link-btn" href="https://openreview.net/forum?id=qPm2f2OE7j" target="_blank">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+      OpenReview
+    </a>
+    <a class="link-btn" href="https://github.com/JomaMinoza/spike" target="_blank">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.165c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.84 1.236 1.84 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.418-1.305.762-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22v3.293c0 .319.21.694.825.576C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      Code
+    </a>
+  </div>
+</section>
+
+<!-- =========================================================
+     TEASER FIGURE
+     ========================================================= -->
+<section class="page-section">
+  <div class="inner">
+    <div class="sec-title">The SPIKE Architecture</div>
+    <div class="teaser">
+      <img src="assets/architecture.png" alt="SPIKE architecture: a PINN encoder maps (x, y, t) to the solution u, lifted into an observable space by a polynomial library plus a learned latent embedding, where a continuous-time Koopman operator enforces sparse linear dynamics." />
+    </div>
+    <p class="fig-caption">
+      <strong>Figure 1.</strong> A standard PINN encoder maps coordinates <span class="mono">(x, y, t)</span> to the
+      solution field <span class="mono">u</span>. A dual observable embedding &mdash; an explicit polynomial library
+      <span class="mono">&psi;<sub>poly</sub></span> plus a learned latent map <span class="mono">&psi;<sub>latent</sub></span>
+      &mdash; lifts <span class="mono">u</span> into a space where a continuous-time Koopman operator enforces linear
+      dynamics <span class="mono">dz/dt = Az</span>. An L1 penalty on <span class="mono">A</span> drives it toward a
+      sparse, interpretable generator (heatmap, right).
+    </p>
+  </div>
+</section>
+
+<!-- =========================================================
+     ABSTRACT
+     ========================================================= -->
+<section class="page-section alt">
+  <div class="inner">
+    <div class="sec-title">Abstract</div>
+    <p class="abstract-text">
+      Physics-Informed Neural Networks (PINNs) solve differential equations mesh-free by embedding physical
+      constraints into training, but they tend to overfit the training domain and generalize poorly when
+      extrapolating beyond it. <strong>SPIKE</strong> (Sparse Physics-Informed Koopman-Enhanced) regularizes PINNs
+      with continuous-time Koopman operators to learn parsimonious dynamics. By enforcing linear dynamics
+      <span class="mono">dz/dt = Az</span> in a learned observable space, both <strong>PIKE</strong> (without explicit
+      sparsity) and <strong>SPIKE</strong> (with L1 regularization on <span class="mono">A</span>) learn sparse
+      generator matrices, embodying the parsimony principle that complex dynamics admit low-dimensional structure.
+      Across parabolic, hyperbolic, dispersive, and stiff PDEs, including fluid dynamics (Navier&ndash;Stokes) and
+      chaotic ODEs (Lorenz), SPIKE delivers consistent gains in temporal extrapolation, spatial generalization, and
+      long-term prediction accuracy. The continuous-time formulation with matrix-exponential integration provides
+      unconditional stability for stiff systems.
+    </p>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="num">&gt;170&times;</div>
+        <div class="lab">longer valid prediction horizon on the chaotic Lorenz attractor (12.1&thinsp;s vs 0.07&thinsp;s)</div>
+      </div>
+      <div class="stat-card">
+        <div class="num">5.5&times;</div>
+        <div class="lab">lower out-of-distribution MSE on Navier&ndash;Stokes downstream channel flow</div>
+      </div>
+      <div class="stat-card">
+        <div class="num">5.7&times;</div>
+        <div class="lab">fewer non-zero generator entries under L1 sparsity (Schr&ouml;dinger)</div>
+      </div>
     </div>
   </div>
-</header>
+</section>
 
-<main class="wrap">
-
-  <!-- TEASER -->
-  <section>
-    <figure class="fig">
-      <img src="assets/architecture.png" alt="SPIKE architecture: a PINN encoder maps (x, y, t) to the solution u, which is lifted into an observable space by a polynomial library plus a learned latent embedding. A continuous-time Koopman operator A enforces linear dynamics, regularized toward sparsity.">
-      <figcaption><b>The SPIKE architecture.</b> A standard PINN encoder maps coordinates <span class="mono">(x, y, t)</span> to the solution field <span class="mono">u</span>. A dual observable embedding &mdash; an explicit polynomial library <span class="mono">&psi;<sub>poly</sub></span> plus a learned latent map <span class="mono">&psi;<sub>latent</sub></span> &mdash; lifts <span class="mono">u</span> into a space where a continuous-time Koopman operator enforces linear dynamics <span class="mono">dz/dt = Az</span>. An L1 penalty on <span class="mono">A</span> drives it toward a sparse, interpretable generator (shown right).</figcaption>
-    </figure>
-  </section>
-
-  <!-- ABSTRACT -->
-  <section id="abstract">
-    <h2 class="sec">Abstract</h2>
-    <p class="lead">Physics-Informed Neural Networks (PINNs) solve differential equations mesh-free by embedding physical constraints into training &mdash; but they tend to overfit the training domain and generalize poorly when extrapolating beyond it.</p>
-    <p><b>SPIKE</b> (Sparse Physics-Informed Koopman-Enhanced) regularizes PINNs with continuous-time Koopman operators to learn parsimonious dynamics. By enforcing linear dynamics <span class="mono">dz/dt = Az</span> in a learned observable space, both <b>PIKE</b> (without explicit sparsity) and <b>SPIKE</b> (with L1 regularization on <span class="mono">A</span>) learn sparse generator matrices &mdash; embodying the parsimony principle that complex dynamics admit low-dimensional structure.</p>
-    <p>Across parabolic, hyperbolic, dispersive, and stiff PDEs &mdash; including fluid dynamics (Navier&ndash;Stokes) and chaotic ODEs (Lorenz) &mdash; SPIKE delivers consistent gains in temporal extrapolation, spatial generalization, and long-term prediction accuracy. The continuous-time formulation with matrix-exponential integration provides unconditional stability for stiff systems.</p>
-
-    <div class="stats">
-      <div class="stat"><div class="num">11&times;</div><div class="lab">longer valid prediction horizon on the chaotic Lorenz attractor (12.1s vs 0.07s)</div></div>
-      <div class="stat"><div class="num">5.5&times;</div><div class="lab">lower out-of-distribution MSE on Navier&ndash;Stokes downstream channel flow</div></div>
-      <div class="stat"><div class="num">5.7&times;</div><div class="lab">fewer non-zero generator entries under L1 sparsity (Schr&ouml;dinger)</div></div>
-    </div>
-  </section>
-
-  <!-- KEY IDEAS -->
-  <section id="ideas">
-    <h2 class="sec">Key Ideas</h2>
-    <div class="cards">
-      <div class="card">
-        <span class="k">koopman as regularizer</span>
+<!-- =========================================================
+     KEY IDEAS
+     ========================================================= -->
+<section class="page-section">
+  <div class="inner wide">
+    <div class="sec-title">Key Ideas</div>
+    <div class="idea-grid">
+      <div class="idea-card">
+        <span class="kicker">koopman as regularizer</span>
         <h3>PINN-first, not Koopman-first</h3>
-        <p>Rather than bolting physics onto a Koopman autoencoder, SPIKE keeps the <b>PINN as the base model</b> and adds Koopman structure as an auxiliary regularizer that promotes sparse, interpretable dynamics.</p>
+        <p>Rather than bolting physics onto a Koopman autoencoder, SPIKE keeps the <strong>PINN as the base model</strong>
+        and adds Koopman structure as an auxiliary regularizer that promotes sparse, interpretable dynamics.</p>
       </div>
-      <div class="card">
-        <span class="k">parsimony principle</span>
+      <div class="idea-card">
+        <span class="kicker">parsimony principle</span>
         <h3>Sparse generators</h3>
-        <p>L1 regularization on <span class="mono">A</span> reduces non-zero entries by up to <b>5.7&times;</b>, capturing complex PDE dynamics with sparse generator matrices &mdash; and even <b>fixing</b> unstable spectra (reaction-diffusion).</p>
+        <p>L1 regularization on <span class="mono">A</span> reduces non-zero entries by up to <strong>5.7&times;</strong>,
+        capturing complex PDE dynamics with sparse generator matrices &mdash; and even <strong>fixing</strong> unstable
+        spectra (reaction-diffusion).</p>
       </div>
-      <div class="card">
-        <span class="k">library + latent</span>
+      <div class="idea-card">
+        <span class="kicker">library + latent</span>
         <h3>Dual observable embedding</h3>
-        <p>An explicit polynomial library (capturing terms like <span class="mono">u&minus;u&sup3;</span>) combines with a learned latent map that correlates with hidden structure &mdash; up to <b>0.99</b> with <span class="mono">u<sub>xx</sub></span>.</p>
+        <p>An explicit polynomial library (capturing terms like <span class="mono">u&minus;u&sup3;</span>) combines with
+        a learned latent map that correlates with hidden structure &mdash; up to <strong>0.99</strong> with
+        <span class="mono">u<sub>xx</sub></span>.</p>
       </div>
-      <div class="card">
-        <span class="k">continuous time</span>
+      <div class="idea-card">
+        <span class="kicker">continuous time</span>
         <h3>Generator, not propagator</h3>
-        <p>Learning <span class="mono">dz/dt = Az</span> directly avoids the diagonal-dominance trap of discrete-time Koopman (<span class="mono">K &rarr; I</span> as <span class="mono">&Delta;t &rarr; 0</span>). Matrix-exponential integration gives unconditional stability.</p>
+        <p>Learning <span class="mono">dz/dt = Az</span> directly avoids the diagonal-dominance trap of discrete-time
+        Koopman (<span class="mono">K &rarr; I</span> as <span class="mono">&Delta;t &rarr; 0</span>). Matrix-exponential
+        integration gives unconditional stability.</p>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- RESULTS: MAIN -->
-  <section id="results">
-    <h2 class="sec">Generalization beyond the training domain</h2>
-    <p>Solutions stay accurate not only in-domain but when extrapolating in time. The shaded panels (<span style="color:var(--accent)">red</span>) sit outside the training window <span class="mono">t&isin;[0,1]</span>.</p>
-    <figure class="fig">
-      <img src="assets/fig_main_results.png" alt="Solution comparison for Burgers and advection equations at t = 0.3, 0.6, 0.9 (in-domain) and t = 1.5 (out of distribution). All Koopman-regularized variants track the analytical solution into the OOD region.">
-      <figcaption><b>In-domain vs. out-of-distribution solutions.</b> Burgers (top) and advection (bottom) at increasing times. Every method matches the analytical solution in-domain; the regularized variants continue to track it at <span class="mono">t=1.5</span>, beyond the training window.</figcaption>
-    </figure>
-  </section>
-
-  <!-- RESULTS: LORENZ + NS -->
-  <section>
-    <h2 class="sec">Chaos &amp; fluids</h2>
-    <div class="grid2 duo">
-      <figure class="fig">
-        <img src="assets/fig_lorenz.png" alt="Lorenz attractor prediction. Koopman-regularized variants remain valid roughly 11x longer than the baseline PINN.">
-        <figcaption><b>Lorenz attractor.</b> Continuous-time Koopman variants stay valid for <b>12.1s</b> (&tau;-ratio 11.0) versus <b>0.07s</b> for the baseline PINN &mdash; an order-of-magnitude longer horizon on a chaotic system.</figcaption>
-      </figure>
-      <figure class="fig">
-        <img src="assets/ns_channel_comparison.gif" alt="Animated Navier-Stokes channel flow comparison over time. PIKE-EXPM achieves 5.5x lower downstream out-of-distribution MSE than the PINN baseline.">
-        <figcaption><b>Navier&ndash;Stokes channel flow.</b> Predicting downstream (<span class="mono">x&isin;[1,2]</span>) of the training region, PIKE-EXPM reaches <b>7.1&times;10<sup>&minus;2</sup></b> MSE vs. the PINN's <b>3.9&times;10<sup>&minus;1</sup></b> &mdash; a 5.5&times; reduction.</figcaption>
-      </figure>
+<!-- =========================================================
+     RESULTS: GENERALIZATION
+     ========================================================= -->
+<section class="page-section alt">
+  <div class="inner wide">
+    <div class="sec-title">Generalization Beyond the Training Domain</div>
+    <p class="results-intro">
+      Solutions stay accurate not only in-domain but when extrapolating in time. The shaded panels (red) sit outside
+      the training window <span class="mono">t&isin;[0,1]</span>.
+    </p>
+    <div class="fig">
+      <img src="assets/fig_main_results.png" alt="Solution comparison for Burgers and advection equations at t = 0.3, 0.6, 0.9 (in-domain) and t = 1.5 (out of distribution). All Koopman-regularized variants track the analytical solution into the OOD region." />
     </div>
-  </section>
+    <p class="fig-caption">
+      <strong>Figure 2.</strong> In-domain vs. out-of-distribution solutions. Burgers (top) and advection (bottom) at
+      increasing times. Every method matches the analytical solution in-domain; the regularized variants continue to
+      track it at <span class="mono">t=1.5</span>, beyond the training window.
+    </p>
+  </div>
+</section>
 
-  <!-- TABLE -->
-  <section id="numbers">
-    <h2 class="sec">Selected quantitative results</h2>
-    <p>Out-of-distribution physics-residual MSE for temporal extrapolation <span class="mono">t&isin;[3,5]</span> (lower is better). Full tables for all systems and regimes are in the <a href="https://github.com/JomaMinoza/spike">repository</a>.</p>
-    <div class="tablewrap">
-      <table>
+<!-- =========================================================
+     RESULTS: CHAOS & FLUIDS
+     ========================================================= -->
+<section class="page-section">
+  <div class="inner wide">
+    <div class="sec-title">Chaos &amp; Fluids</div>
+    <div class="media-duo">
+      <div class="media-card">
+        <img src="assets/lorenz_attractor.gif" alt="Animated Lorenz attractor. The baseline PINN diverges from the chaotic trajectory almost immediately, while SPIKE-EXPM stays valid far longer." />
+        <p class="cap"><strong>Lorenz attractor.</strong> The continuous-time Koopman variant (SPIKE-EXPM) stays
+        within the error threshold for <strong>12.1&thinsp;s</strong> versus <strong>0.07&thinsp;s</strong> for the
+        baseline PINN &mdash; an order-of-magnitude longer horizon on a chaotic system.</p>
+      </div>
+      <div class="media-card">
+        <img src="assets/ns_channel_comparison.gif" alt="Animated Navier-Stokes channel flow comparison over time. PIKE-EXPM achieves 5.5x lower downstream out-of-distribution MSE than the PINN baseline." />
+        <p class="cap"><strong>Navier&ndash;Stokes channel flow.</strong> Predicting downstream
+        (<span class="mono">x&isin;[1,2]</span>) of the training region, PIKE-EXPM reaches
+        <strong>7.1&times;10<sup>&minus;2</sup></strong> MSE vs. the PINN's
+        <strong>3.9&times;10<sup>&minus;1</sup></strong> &mdash; a 5.5&times; reduction.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     RESULTS: QUANTITATIVE TABLE
+     ========================================================= -->
+<section class="page-section alt">
+  <div class="inner wide">
+    <div class="sec-title">Selected Quantitative Results</div>
+    <p class="results-intro">
+      Out-of-distribution physics-residual MSE for temporal extrapolation <span class="mono">t&isin;[3,5]</span>
+      (lower is better). Full tables for all systems and regimes are in the
+      <a href="https://github.com/JomaMinoza/spike" target="_blank">repository</a>.
+    </p>
+    <div class="table-scroll">
+      <table class="data-table">
         <thead>
           <tr><th>System</th><th>PINN</th><th>PIKE-Euler</th><th>PIKE-RK4</th><th>PIKE-EXPM</th><th>SPIKE-EXPM</th></tr>
         </thead>
-        <tbody class="mono-cell">
+        <tbody>
           <tr><td>heat</td><td>7.52e-4</td><td>2.17e-3</td><td class="best">7.00e-4</td><td>7.97e-4</td><td>8.03e-4</td></tr>
           <tr><td>burgers</td><td>2.77e-2</td><td class="best">1.15e-2</td><td>2.97e-2</td><td>2.91e-2</td><td>2.91e-2</td></tr>
           <tr><td>kdv</td><td>8.89e-3</td><td>2.49e-2</td><td>9.99e-3</td><td class="best">1.42e-3</td><td>1.81e-3</td></tr>
@@ -244,52 +363,70 @@
           <tr><td>reaction-diffusion</td><td class="best">9.72e-3</td><td>1.73e-2</td><td>1.06e-2</td><td>1.17e-2</td><td>1.12e-2</td></tr>
         </tbody>
       </table>
-      <caption>OOD-time physics residual MSE, <span class="mono">t&isin;[3,5]</span>, <span class="mono">x&isin;[0,1]</span>. Best per row in <span style="color:var(--accent)">red</span>.</caption>
     </div>
-  </section>
-
-  <!-- METHOD VARIANTS -->
-  <section id="variants">
-    <h2 class="sec">Method variants</h2>
-    <ul class="clean">
-      <li><b>PINN</b> &mdash; standard physics-informed baseline (no Koopman regularization).</li>
-      <li><b>PIKE-Euler / RK4 / EXPM</b> &mdash; Koopman-enhanced PINN; the suffix is the integrator used to roll out <span class="mono">dz/dt = Az</span> (forward Euler, Runge&ndash;Kutta 4, or matrix exponential).</li>
-      <li><b>SPIKE-EXPM</b> &mdash; PIKE with L1 sparsity on the generator <span class="mono">A</span> and matrix-exponential integration; the full method.</li>
-    </ul>
-  </section>
-
-  <!-- CITATION -->
-  <section id="bibtex">
-    <h2 class="sec">BibTeX</h2>
-    <button class="copy" onclick="copyCite()">Copy citation</button>
-    <pre class="cite" id="citetext">@inproceedings{minoza2026spike,
-    title     = {{SPIKE}: Sparse Koopman Regularization for
-                 Physics-Informed Neural Networks},
-    author    = {Jose Marie Antonio Mi{\~n}oza},
-    booktitle = {The Third Conference on Parsimony and Learning
-                 (Proceedings Track)},
-    year      = {2026},
-    url       = {https://openreview.net/forum?id=qPm2f2OE7j}
-}</pre>
-  </section>
-
-</main>
-
-<footer>
-  <div class="wrap">
-    <p>Project page for SPIKE &middot; CPAL 2026 &middot; <a href="https://github.com/JomaMinoza/spike">github.com/JomaMinoza/spike</a></p>
+    <p class="table-note">OOD-time physics residual MSE, <span class="mono">t&isin;[3,5]</span>,
+      <span class="mono">x&isin;[0,1]</span>. Best per row in blue.</p>
   </div>
+</section>
+
+<!-- =========================================================
+     METHOD VARIANTS
+     ========================================================= -->
+<section class="page-section">
+  <div class="inner">
+    <div class="sec-title">Method Variants</div>
+    <ul class="variant-list">
+      <li><strong>PINN</strong> &mdash; standard physics-informed baseline (no Koopman regularization).</li>
+      <li><strong>PIKE-Euler / RK4 / EXPM</strong> &mdash; Koopman-enhanced PINN; the suffix is the integrator used to
+      roll out <span class="mono">dz/dt = Az</span> (forward Euler, Runge&ndash;Kutta 4, or matrix exponential).</li>
+      <li><strong>SPIKE-EXPM</strong> &mdash; PIKE with L1 sparsity on the generator <span class="mono">A</span> and
+      matrix-exponential integration; the full method.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- =========================================================
+     BIBTEX
+     ========================================================= -->
+<section class="page-section alt">
+  <div class="inner">
+    <div class="sec-title">Citation</div>
+    <div class="bibtex-wrap">
+      <pre class="bibtex-block" id="bibtex">@inproceedings{minoza2026spike,
+  title     = {SPIKE: Sparse Koopman Regularization for
+               Physics-Informed Neural Networks},
+  author    = {Mi{\~n}oza, Jose Marie Antonio},
+  booktitle = {The Third Conference on Parsimony and Learning
+               (Proceedings Track)},
+  year      = {2026},
+  url       = {https://openreview.net/forum?id=qPm2f2OE7j}
+}</pre>
+      <button class="copy-btn" onclick="copyBibtex()">Copy</button>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     FOOTER
+     ========================================================= -->
+<footer>
+  <p>
+    Website template based on <a href="https://nerfies.github.io" target="_blank">Nerfies</a>
+    (<a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">CC BY-SA 4.0</a>).
+    &copy; 2026 Jose Marie Antonio Mi&ntilde;oza, Center for AI Research PH.
+  </p>
 </footer>
 
 <script>
-function copyCite(){
-  var t = document.getElementById('citetext').innerText;
-  navigator.clipboard.writeText(t).then(function(){
-    var b = document.querySelector('.copy');
-    var old = b.innerText; b.innerText = 'Copied';
-    setTimeout(function(){ b.innerText = old; }, 1500);
+function copyBibtex() {
+  const text = document.getElementById('bibtex').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
   });
 }
 </script>
+
 </body>
 </html>
