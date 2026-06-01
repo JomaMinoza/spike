@@ -120,6 +120,9 @@
 
     /* ---- Results tables ---- */
     .results-intro { font-size: 0.95rem; line-height: 1.75; color: #374151; margin-bottom: 1.2rem; }
+    .subhead { font-size: 0.9rem; font-weight: 700; color: var(--text); margin: 1.8rem 0 0.6rem; }
+    .subhead:first-of-type { margin-top: 0; }
+    .subhead .tag { font-weight: 500; color: var(--gray); font-size: 0.85em; }
     .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     .data-table th {
       background: #f3f4f6; font-weight: 600; padding: 0.6rem 0.8rem;
@@ -340,32 +343,132 @@
 </section>
 
 <!-- =========================================================
-     RESULTS: QUANTITATIVE TABLE
+     RESULTS: QUANTITATIVE TABLES
      ========================================================= -->
 <section class="page-section alt">
   <div class="inner wide">
-    <div class="sec-title">Selected Quantitative Results</div>
+    <div class="sec-title">Quantitative Results</div>
     <p class="results-intro">
-      Out-of-distribution physics-residual MSE for temporal extrapolation <span class="mono">t&isin;[3,5]</span>
-      (lower is better). Full tables for all systems and regimes are in the
+      Physics-residual MSE (lower is better) across systems and generalization regimes, plus Koopman diagnostics.
+      Best per row in blue. Full results for all systems are in the
       <a href="https://github.com/JomaMinoza/spike" target="_blank">repository</a>.
     </p>
+
+    <!-- 1D PDEs: In-domain -->
+    <p class="subhead">1D PDEs &mdash; In-Domain Physics Residual MSE <span class="tag">(x, t &isin; [0,1])</span></p>
     <div class="table-scroll">
       <table class="data-table">
-        <thead>
-          <tr><th>System</th><th>PINN</th><th>PIKE-Euler</th><th>PIKE-RK4</th><th>PIKE-EXPM</th><th>SPIKE-EXPM</th></tr>
-        </thead>
+        <thead><tr><th>PDE</th><th>PINN</th><th>PIKE-Euler</th><th>PIKE-RK4</th><th>PIKE-EXPM</th><th>SPIKE-EXPM</th></tr></thead>
         <tbody>
+          <tr><td>heat</td><td>1.01e-5</td><td>6.95e-6</td><td>1.20e-5</td><td class="best">6.02e-6</td><td>8.67e-6</td></tr>
+          <tr><td>advection</td><td>5.04e-7</td><td>8.89e-5</td><td>4.45e-7</td><td>4.88e-7</td><td class="best">3.90e-7</td></tr>
+          <tr><td>burgers</td><td>9.68e-5</td><td>4.63e-5</td><td>3.44e-5</td><td class="best">3.23e-5</td><td class="best">3.23e-5</td></tr>
+          <tr><td>allen-cahn</td><td class="best">1.19e-5</td><td>1.56e-5</td><td>1.44e-5</td><td>2.34e-5</td><td>7.08e-5</td></tr>
+          <tr><td>kdv</td><td>5.23e-2</td><td class="best">4.75e-2</td><td>5.24e-2</td><td>5.06e-2</td><td>5.14e-2</td></tr>
+          <tr><td>reaction-diffusion</td><td>5.02e-5</td><td>2.67e-4</td><td>4.80e-5</td><td class="best">4.63e-5</td><td>1.51e-4</td></tr>
+          <tr><td>cahn-hilliard</td><td>3.53e-1</td><td class="best">2.61e-7</td><td>3.50e-1</td><td>3.46e-1</td><td>1.22e-1</td></tr>
+          <tr><td>kuramoto-sivashinsky</td><td class="best">1.83e+1</td><td>8.77e+1</td><td>6.75e+2</td><td>2.93e+2</td><td>1.91e+1</td></tr>
+          <tr><td>schrodinger</td><td>2.50e+1</td><td>2.53e+1</td><td>2.49e+1</td><td>2.47e+1</td><td class="best">1.20e+1</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 1D PDEs: Spatial extrapolation -->
+    <p class="subhead">1D PDEs &mdash; Spatial Extrapolation (OOD-Space) <span class="tag">(x &isin; [1,3], t &isin; [0,1])</span></p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>PDE</th><th>PINN</th><th>PIKE-Euler</th><th>PIKE-RK4</th><th>PIKE-EXPM</th><th>SPIKE-EXPM</th></tr></thead>
+        <tbody>
+          <tr><td>heat</td><td>1.64e-3</td><td class="best">1.09e-3</td><td>1.71e-3</td><td>1.69e-3</td><td>1.66e-3</td></tr>
+          <tr><td>advection</td><td>4.50e-7</td><td>1.86e-5</td><td>2.87e-7</td><td>3.13e-7</td><td class="best">1.98e-7</td></tr>
+          <tr><td>burgers</td><td class="best">5.90e-3</td><td>1.80e-2</td><td>6.59e-3</td><td>6.10e-3</td><td>6.10e-3</td></tr>
+          <tr><td>allen-cahn</td><td class="best">4.50e-2</td><td>5.89e-2</td><td>5.02e-2</td><td>5.85e-2</td><td>6.17e-2</td></tr>
+          <tr><td>kdv</td><td>2.63e-2</td><td class="best">2.57e-2</td><td>2.64e-2</td><td>2.64e-2</td><td>2.63e-2</td></tr>
+          <tr><td>reaction-diffusion</td><td>5.55e-5</td><td>2.71e-3</td><td>5.82e-5</td><td>7.29e-5</td><td class="best">3.97e-5</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 1D PDEs: Temporal extrapolation -->
+    <p class="subhead">1D PDEs &mdash; Temporal Extrapolation (OOD-Time) <span class="tag">(x &isin; [0,1])</span></p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>PDE</th><th>PINN</th><th>PIKE-Euler</th><th>PIKE-RK4</th><th>PIKE-EXPM</th><th>SPIKE-EXPM</th></tr></thead>
+        <tbody>
+          <tr><td colspan="6" style="background:#eef2ff;color:#3730a3;font-weight:600;font-size:0.82rem;text-align:left;">t &isin; [1, 3]</td></tr>
+          <tr><td>heat</td><td>1.82e-4</td><td class="best">1.64e-4</td><td>1.94e-4</td><td>1.80e-4</td><td>1.79e-4</td></tr>
+          <tr><td>advection</td><td class="best">3.10e-7</td><td>1.23e-5</td><td>3.72e-7</td><td>3.20e-7</td><td>3.89e-7</td></tr>
+          <tr><td>burgers</td><td>8.10e-2</td><td class="best">3.09e-2</td><td>1.12e-1</td><td>8.93e-2</td><td>8.93e-2</td></tr>
+          <tr><td>allen-cahn</td><td>2.04e-2</td><td>2.33e-2</td><td class="best">1.93e-2</td><td>2.37e-2</td><td>2.35e-2</td></tr>
+          <tr><td>kdv</td><td>2.28e-2</td><td>3.48e-2</td><td>2.17e-2</td><td class="best">1.78e-2</td><td>1.89e-2</td></tr>
+          <tr><td>reaction-diffusion</td><td class="best">2.00e-3</td><td>4.20e-3</td><td>2.10e-3</td><td>2.27e-3</td><td>2.31e-3</td></tr>
+          <tr><td colspan="6" style="background:#eef2ff;color:#3730a3;font-weight:600;font-size:0.82rem;text-align:left;">t &isin; [3, 5]</td></tr>
           <tr><td>heat</td><td>7.52e-4</td><td>2.17e-3</td><td class="best">7.00e-4</td><td>7.97e-4</td><td>8.03e-4</td></tr>
+          <tr><td>advection</td><td class="best">4.05e-10</td><td>2.96e-9</td><td>6.02e-10</td><td>4.48e-10</td><td>1.06e-9</td></tr>
           <tr><td>burgers</td><td>2.77e-2</td><td class="best">1.15e-2</td><td>2.97e-2</td><td>2.91e-2</td><td>2.91e-2</td></tr>
-          <tr><td>kdv</td><td>8.89e-3</td><td>2.49e-2</td><td>9.99e-3</td><td class="best">1.42e-3</td><td>1.81e-3</td></tr>
           <tr><td>allen-cahn</td><td class="best">6.21e-2</td><td>1.11e-1</td><td>6.46e-2</td><td>9.76e-2</td><td>9.58e-2</td></tr>
+          <tr><td>kdv</td><td>8.89e-3</td><td>2.49e-2</td><td>9.99e-3</td><td class="best">1.42e-3</td><td>1.81e-3</td></tr>
           <tr><td>reaction-diffusion</td><td class="best">9.72e-3</td><td>1.73e-2</td><td>1.06e-2</td><td>1.17e-2</td><td>1.12e-2</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="table-note">OOD-time physics residual MSE, <span class="mono">t&isin;[3,5]</span>,
-      <span class="mono">x&isin;[0,1]</span>. Best per row in blue.</p>
+
+    <!-- 2D PDEs: In-domain -->
+    <p class="subhead">2D PDEs &mdash; In-Domain Physics Residual MSE <span class="tag">(x, y, t &isin; [0,1])</span></p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>PDE</th><th>PINN</th><th>PIKE-Euler</th><th>PIKE-RK4</th><th>PIKE-EXPM</th><th>SPIKE-EXPM</th></tr></thead>
+        <tbody>
+          <tr><td>wave 2D</td><td>1.72e+4</td><td class="best">2.06e-4</td><td>2.17e+5</td><td>7.69e+4</td><td>5.11e-2</td></tr>
+          <tr><td>burgers 2D</td><td>9.66e-3</td><td class="best">7.12e-3</td><td>4.92e-2</td><td>3.23e-2</td><td>9.34e-3</td></tr>
+          <tr><td>navier-stokes 2D</td><td>1.81e-1</td><td class="best">1.43e-1</td><td>2.58e-1</td><td>3.59e-1</td><td>1.56e-1</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Navier-Stokes downstream -->
+    <p class="subhead">Navier&ndash;Stokes &mdash; Downstream Channel Flow <span class="tag">(physically meaningful OOD, t = 0.5)</span></p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Region</th><th>PINN</th><th>PIKE-Euler</th><th>PIKE-RK4</th><th>PIKE-EXPM</th><th>SPIKE-EXPM</th></tr></thead>
+        <tbody>
+          <tr><td>in-domain (x &isin; [0,1])</td><td>2.06e-1</td><td>3.74e-1</td><td>1.55e-1</td><td class="best">4.64e-2</td><td>9.06e-2</td></tr>
+          <tr><td>OOD-downstream (x &isin; [1,2])</td><td>3.94e-1</td><td>5.06e-1</td><td>3.32e-1</td><td class="best">7.14e-2</td><td>1.62e-1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">PIKE-EXPM achieves a 5.5&times; lower OOD-downstream MSE than PINN (7.14e-2 vs 3.94e-1).</p>
+
+    <!-- Lorenz Lyapunov -->
+    <p class="subhead">Chaotic Dynamics &mdash; Lorenz Lyapunov Analysis <span class="tag">(&tau;<sub>&lambda;</sub> = 1.1 s)</span></p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Metric</th><th>PINN</th><th>PIKE-Euler</th><th>PIKE-RK4</th><th>PIKE-EXPM</th><th>SPIKE-EXPM</th></tr></thead>
+        <tbody>
+          <tr><td>Valid time (s) &uarr;</td><td>0.07</td><td class="best">12.12</td><td>0.07</td><td class="best">12.12</td><td class="best">12.12</td></tr>
+          <tr><td>&tau; ratio &uarr;</td><td>0.06</td><td class="best">11.02</td><td>0.06</td><td class="best">11.02</td><td class="best">11.02</td></tr>
+          <tr><td>Short-term MSE &darr;</td><td>2.31e+1</td><td class="best">1.60e-1</td><td>1.93e+1</td><td>6.16e-1</td><td>6.16e-1</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Koopman latent R2 -->
+    <p class="subhead">Koopman Latent R&sup2; <span class="tag">(higher is better; PIKE/SPIKE only)</span></p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>System</th><th>PIKE-Euler</th><th>PIKE-RK4</th><th>PIKE-EXPM</th><th>SPIKE-EXPM</th></tr></thead>
+        <tbody>
+          <tr><td>heat</td><td>0.9989</td><td>0.9989</td><td class="best">0.9990</td><td class="best">0.9990</td></tr>
+          <tr><td>advection</td><td>0.8895</td><td class="best">0.9004</td><td>0.9003</td><td>0.9003</td></tr>
+          <tr><td>burgers</td><td class="best">0.9699</td><td>0.9670</td><td>0.9695</td><td>0.9695</td></tr>
+          <tr><td>allen-cahn</td><td class="best">0.9983</td><td>0.9983</td><td>0.9983</td><td>0.9982</td></tr>
+          <tr><td>kdv</td><td>0.9247</td><td>0.9481</td><td class="best">0.9495</td><td>0.9471</td></tr>
+          <tr><td>reaction-diffusion</td><td>0.9827</td><td class="best">0.9895</td><td class="best">0.9895</td><td>0.9857</td></tr>
+          <tr><td>burgers 2D</td><td>0.9580</td><td>0.9503</td><td class="best">0.9756</td><td>0.9550</td></tr>
+          <tr><td>navier-stokes 2D</td><td>0.8008</td><td class="best">0.9041</td><td>0.8931</td><td>0.8750</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </section>
 
