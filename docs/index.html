@@ -120,7 +120,8 @@
     .media-card .cap strong { color: var(--text); }
 
     /* ---- Mono / inline ---- */
-    .mono { font-family: "Courier New", monospace; font-size: 0.95em; }
+    /* inline variables / math: italic Inter, matching the rest of the page (no monospace) */
+    .mono { font-style: italic; }
 
     /* ---- Results tables ---- */
     .results-intro { font-size: 0.95rem; line-height: 1.75; color: #374151; margin-bottom: 1.2rem; }
@@ -359,6 +360,36 @@
       <a href="https://github.com/JomaMinoza/spike" target="_blank">repository</a>.
     </p>
 
+    <!-- Summary of key improvements -->
+    <p class="subhead">Summary of Key Improvements over the PINN Baseline <span class="tag">(grouped by metric type)</span></p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>System</th><th>Metric</th><th>Improvement</th><th>Best Method</th></tr></thead>
+        <tbody>
+          <tr><td colspan="4" style="background:#eef2ff;color:#3730a3;font-weight:600;font-size:0.82rem;text-align:left;">In-Domain MSE</td></tr>
+          <tr><td>2D Wave</td><td>in-domain</td><td class="best">8&times;10<sup>7</sup>&times;</td><td>PIKE-Euler</td></tr>
+          <tr><td>Cahn-Hilliard</td><td>in-domain</td><td class="best">10<sup>6</sup>&times;</td><td>PIKE-Euler</td></tr>
+          <tr><td colspan="4" style="background:#eef2ff;color:#3730a3;font-weight:600;font-size:0.82rem;text-align:left;">OOD-Space MSE <span style="font-weight:400;">(extrapolation beyond training domain)</span></td></tr>
+          <tr><td>2D Burgers<sup>&dagger;</sup></td><td>xy &isin; [1,2]</td><td class="best">38&times;</td><td>PIKE-Euler</td></tr>
+          <tr><td>Advection<sup>&dagger;</sup></td><td>x &isin; [3,5]</td><td class="best">29&times;</td><td>SPIKE-EXPM</td></tr>
+          <tr><td>Allen-Cahn<sup>&dagger;</sup></td><td>x &isin; [3,5]</td><td class="best">7.5&times;</td><td>PIKE-Euler</td></tr>
+          <tr><td>Navier-Stokes</td><td>xy &isin; [1,2]</td><td class="best">32&times;</td><td>PIKE-Euler</td></tr>
+          <tr><td>Kuramoto-Sivashinsky</td><td>x &isin; [3,5]</td><td class="best">2.1&times;</td><td>SPIKE-EXPM</td></tr>
+          <tr><td colspan="4" style="background:#eef2ff;color:#3730a3;font-weight:600;font-size:0.82rem;text-align:left;">OOD-Time MSE</td></tr>
+          <tr><td>Schrodinger</td><td>t &isin; [3,5]</td><td class="best">24&times;</td><td>SPIKE-EXPM</td></tr>
+          <tr><td>KdV</td><td>t &isin; [3,5]</td><td class="best">6.3&times;</td><td>PIKE-EXPM</td></tr>
+          <tr><td>Burgers</td><td>t &isin; [3,5]</td><td class="best">2.4&times;</td><td>PIKE-Euler</td></tr>
+          <tr><td>Kuramoto-Sivashinsky</td><td>t &isin; [3,5]</td><td class="best">2.8&times;</td><td>PIKE-RK4</td></tr>
+          <tr><td colspan="4" style="background:#eef2ff;color:#3730a3;font-weight:600;font-size:0.82rem;text-align:left;">Chaotic Systems (Valid Prediction Time)</td></tr>
+          <tr><td>Lorenz</td><td>valid time</td><td class="best">184&times;</td><td>PIKE-Euler</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">
+      <sup>&dagger;</sup>Bounded-domain problems where spatial extrapolation demonstrates model capability rather than
+      physical prediction. Improvement = PINN MSE / best-method MSE (higher is better).
+    </p>
+
     <!-- 1D PDEs: In-domain -->
     <p class="subhead">1D PDEs &mdash; In-Domain Physics Residual MSE <span class="tag">(x, t &isin; [0,1])</span></p>
     <div class="table-scroll">
@@ -474,6 +505,29 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Learned dynamics / interpretability -->
+    <p class="subhead">Learned Dynamics Structure <span class="tag">(interpretability: library term + latent correlations)</span></p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>PDE</th><th>True equation</th><th>Library dg<sub>1</sub>/dt</th><th>Latent correlations</th></tr></thead>
+        <tbody>
+          <tr><td>Heat</td><td class="mono">u<sub>t</sub> = &alpha; u<sub>xx</sub></td><td class="mono">+0.07 g<sub>2</sub></td><td><strong>u<sub>xx</sub> (0.99)</strong></td></tr>
+          <tr><td>Advection</td><td class="mono">u<sub>t</sub> = &minus;c u<sub>x</sub></td><td class="mono">0</td><td><strong>u<sub>x</sub> (0.96)</strong>, <strong>u<sub>t</sub> (0.96)</strong></td></tr>
+          <tr><td>Burgers</td><td class="mono">u<sub>t</sub> = &minus;u u<sub>x</sub> + &nu; u<sub>xx</sub></td><td class="mono">&minus;0.06 g<sub>0</sub> + 0.04 g<sub>1</sub></td><td><strong>u&minus;u&sup3; (0.97)</strong>, u<sub>xx</sub> (0.27)</td></tr>
+          <tr><td>Allen-Cahn</td><td class="mono">u<sub>t</sub> = &epsilon; u<sub>xx</sub> + u &minus; u&sup3;</td><td class="mono">+0.03 g<sub>0</sub> &minus; 0.03 g<sub>1</sub></td><td><strong>u&minus;u&sup3; (0.85)</strong>, u<sub>xx</sub> (0.57)</td></tr>
+          <tr><td>KdV</td><td class="mono">u<sub>t</sub> = &minus;u u<sub>x</sub> &minus; u<sub>xxx</sub></td><td class="mono">0</td><td><strong>u&sup3; (1.00)</strong>, <strong>u<sub>xx</sub> (0.94)</strong></td></tr>
+          <tr><td>Reaction-Diffusion</td><td class="mono">u<sub>t</sub> = D u<sub>xx</sub> + R(u)</td><td class="mono">&minus;0.03 g<sub>0</sub> + 0.01 g<sub>1</sub></td><td><strong>u<sub>xx</sub> (0.76)</strong>, <strong>u&sup3; (0.91)</strong></td></tr>
+          <tr><td>Kuramoto-Sivashinsky</td><td class="mono">u<sub>t</sub> = &minus;u u<sub>x</sub> &minus; u<sub>xx</sub> &minus; u<sub>xxxx</sub></td><td class="mono">&asymp; 0 (4&times; sparser)</td><td><strong>u&sup3; (0.96)</strong>, u<sub>xx</sub> (0.38)</td></tr>
+          <tr><td>Schrodinger</td><td class="mono">i u<sub>t</sub> = u<sub>xx</sub> + |u|&sup2; u</td><td class="mono">&minus;0.01 g<sub>0</sub></td><td>u<sub>re</sub> (0.55), |u|&sup2; (0.36)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">
+      Observable convention g<sub>0</sub> = 1, g<sub>1</sub> = u, g<sub>2</sub> = u&sup2;. Bold marks strong latent
+      correlations (|r| &gt; 0.7). The sparse generator recovers interpretable structure: SPIKE's L1 penalty makes
+      Kuramoto-Sivashinsky 4&times; sparser while preserving the dominant u&sup3; coupling.
+    </p>
   </div>
 </section>
 
@@ -490,6 +544,24 @@
       <li><strong>SPIKE-EXPM</strong> &mdash; PIKE with L1 sparsity on the generator <span class="mono">A</span> and
       matrix-exponential integration; the full method.</li>
     </ul>
+
+    <p class="subhead" style="margin-top:2rem;">Choosing an Integrator <span class="tag">(stability&ndash;accuracy tradeoff vs. PDE stiffness)</span></p>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Integrator</th><th>Stability</th><th>Accuracy</th><th>Overhead</th><th>Recommended when</th></tr></thead>
+        <tbody>
+          <tr><td>Euler</td><td>Conditional</td><td class="mono">O(&Delta;t)</td><td>Minimal</td><td>Non-stiff PDEs (heat, advection, Burgers)</td></tr>
+          <tr><td>RK4</td><td>Conditional (larger region)</td><td class="mono">O(&Delta;t<sup>4</sup>)</td><td>~5%</td><td>Moderate stiffness requiring higher accuracy</td></tr>
+          <tr><td>EXPM</td><td>Unconditional</td><td>Exact for linear</td><td>~25%</td><td>Stiff PDEs (Cahn-Hilliard, KS, Schrodinger)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">
+      <strong>Practical guideline:</strong> start with PIKE-Euler; if instability appears (oscillations, divergence)
+      or the PDE has fourth-order spatial derivatives, switch to EXPM. For non-stiff systems Euler often achieves the
+      tightest Koopman fit; for stiff systems (<span class="mono">|&lambda;<sub>max</sub>| &gt; 10<sup>4</sup></span>)
+      EXPM's unconditional stability justifies its ~25% overhead.
+    </p>
   </div>
 </section>
 
