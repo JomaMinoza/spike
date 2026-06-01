@@ -2,6 +2,9 @@
 
 PyTorch implementation of SPIKE for improved PINN generalization via Koopman regularization.
 
+Published at the Conference on Parsimony and Learning (CPAL) 2026, PMLR v328, pp. 164-191.
+[[Proceedings](https://proceedings.mlr.press/v328/minoza26a.html)] [[PDF](https://raw.githubusercontent.com/mlresearch/v328/main/assets/minoza26a/minoza26a.pdf)] [[Project page](https://jomaminoza.github.io/spike/)]
+
 ![SPIKE Architecture](assets/SPIKE.png)
 
 ## Abstract
@@ -96,12 +99,16 @@ spike/
 ## Citation
 
 ```bibtex
-@inproceedings{
-    minoza2026spike,
-    title={{SPIKE}: Sparse Koopman Regularization for Physics-Informed Neural Networks},
-    author={Jose Marie Antonio Mi{\~n}oza},
-    booktitle={The Third Conference on Parsimony and Learning (Proceedings Track)},
-    year={2026},
-    url={https://openreview.net/forum?id=qPm2f2OE7j}
+@InProceedings{pmlr-v328-minoza26a,
+  title     = {SPIKE: Sparse Koopman Regularization for Physics-Informed Neural Networks},
+  author    = {Mi\~{n}oza, Jose Marie Antonio},
+  booktitle = {Conference on Parsimony and Learning},
+  pages     = {164--191},
+  year      = {2026},
+  editor    = {Burkholz, Rebekka and Liu, Shiwei and Ravishankar, Saiprasad and Redman, William and Huang, Wei and Su, Weijie and Zhu, Zhihui},
+  volume    = {328},
+  series    = {Proceedings of Machine Learning Research},
+  month     = {23--26 Mar},
+  publisher = {PMLR}
 }
 ```
