@@ -98,7 +98,7 @@
     @media (max-width: 700px) { .idea-grid { grid-template-columns: 1fr; } }
     .idea-card { border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem 1.3rem; background: #fff; }
     .idea-card .kicker {
-      font-family: "Courier New", monospace; font-size: 0.74rem; letter-spacing: 0.04em;
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em;
       color: var(--blue); text-transform: uppercase; display: block; margin-bottom: 0.5rem;
     }
     .idea-card h3 { font-size: 1.02rem; font-weight: 700; margin-bottom: 0.4rem; }
@@ -177,7 +177,8 @@
 <nav class="topnav">
   <span class="brand">SPIKE</span>
   <div class="navlinks">
-    <a href="https://openreview.net/pdf?id=qPm2f2OE7j" target="_blank">Paper</a>
+    <a href="https://raw.githubusercontent.com/mlresearch/v328/main/assets/minoza26a/minoza26a.pdf" target="_blank">Paper</a>
+    <a href="https://proceedings.mlr.press/v328/minoza26a.html" target="_blank">PMLR</a>
     <a href="https://openreview.net/forum?id=qPm2f2OE7j" target="_blank">OpenReview</a>
     <a href="https://github.com/JomaMinoza/spike" target="_blank">Code</a>
   </div>
@@ -193,9 +194,13 @@
   <p class="author">Jose Marie Antonio Mi&ntilde;oza</p>
   <p class="affil">Center for AI Research PH</p>
   <div class="link-row">
-    <a class="link-btn" href="https://openreview.net/pdf?id=qPm2f2OE7j" target="_blank">
+    <a class="link-btn" href="https://raw.githubusercontent.com/mlresearch/v328/main/assets/minoza26a/minoza26a.pdf" target="_blank">
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/></svg>
       Paper
+    </a>
+    <a class="link-btn" href="https://proceedings.mlr.press/v328/minoza26a.html" target="_blank">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/></svg>
+      PMLR
     </a>
     <a class="link-btn" href="https://openreview.net/forum?id=qPm2f2OE7j" target="_blank">
       <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
@@ -572,14 +577,18 @@
   <div class="inner">
     <div class="sec-title">Citation</div>
     <div class="bibtex-wrap">
-      <pre class="bibtex-block" id="bibtex">@inproceedings{minoza2026spike,
-  title     = {SPIKE: Sparse Koopman Regularization for
-               Physics-Informed Neural Networks},
-  author    = {Mi{\~n}oza, Jose Marie Antonio},
-  booktitle = {The Third Conference on Parsimony and Learning
-               (Proceedings Track)},
+      <pre class="bibtex-block" id="bibtex">@InProceedings{pmlr-v328-minoza26a,
+  title     = {SPIKE: Sparse Koopman Regularization for Physics-Informed Neural Networks},
+  author    = {Mi\~{n}oza, Jose Marie Antonio},
+  booktitle = {Conference on Parsimony and Learning},
+  pages     = {164--191},
   year      = {2026},
-  url       = {https://openreview.net/forum?id=qPm2f2OE7j}
+  editor    = {Burkholz, Rebekka and Liu, Shiwei and Ravishankar, Saiprasad
+               and Redman, William and Huang, Wei and Su, Weijie and Zhu, Zhihui},
+  volume    = {328},
+  series    = {Proceedings of Machine Learning Research},
+  month     = {23--26 Mar},
+  publisher = {PMLR}
 }</pre>
       <button class="copy-btn" onclick="copyBibtex()">Copy</button>
     </div>
